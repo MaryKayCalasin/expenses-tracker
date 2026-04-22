@@ -147,3 +147,6 @@
 /Users/marykay/ExpensesTracker/obj/Debug/net10.0/ExpensesTracker.pdb
 /Users/marykay/ExpensesTracker/obj/Debug/net10.0/ExpensesTracker.genruntimeconfig.cache
 /Users/marykay/ExpensesTracker/obj/Debug/net10.0/ref/ExpensesTracker.dll
+/Users/marykay/ExpensesTracker/bin/Debug/net10.0/Swashbuckle.AspNetCore.Swagger.dll
+/Users/marykay/ExpensesTracker/bin/Debug/net10.0/Swashbuckle.AspNetCore.SwaggerGen.dll
+/Users/marykay/ExpensesTracker/bin/Debug/net10.0/Swashbuckle.AspNetCore.SwaggerUI.dll
