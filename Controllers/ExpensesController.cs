@@ -36,4 +36,21 @@ public class ExpensesController : ControllerBase
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(GetAll), expense);
     }
+    
+    // DELETE /api/expenses/5
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var expense = await _db.Expenses.FindAsync(id);
+
+        if (expense == null)
+        {
+            return NotFound();
+        }
+
+        _db.Expenses.Remove(expense);
+        await _db.SaveChangesAsync();
+
+        return NoContent();
+    }
 }
