@@ -1,1 +1,6 @@
 appsettings.json
+*.db
+*.db-shm
+*.db-wal
+bin/
+obj/
