@@ -53,4 +53,24 @@ public class ExpensesController : ControllerBase
 
         return NoContent();
     }
+    
+    // GET /api/expenses/summary
+    [HttpGet("summary")]
+    public async Task<IActionResult> GetSummary()
+    {
+        var expenses = await _db.Expenses.ToListAsync();
+
+        var summary = expenses
+            .GroupBy(e => e.Category)
+            .Select(group => new
+            {
+                Category = group.Key,
+                Total = group.Sum(e => e.Amount),
+                Count = group.Count()
+            })
+            .OrderByDescending(s => s.Total)
+            .ToList();
+
+        return Ok(summary);
+    }
 }
