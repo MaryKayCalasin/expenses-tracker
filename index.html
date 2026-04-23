@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💸 Expenses Tracker</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #1a1a2e; }
+
+        header {
+            background: linear-gradient(135deg, #7B2D8B, #a855f7);
+            color: white; padding: 24px 32px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        header h1 { font-size: 24px; }
+        header p { font-size: 13px; opacity: 0.8; margin-top: 4px; }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+
+        .card {
+            background: white; border-radius: 16px;
+            padding: 24px; margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        .card h2 { font-size: 18px; margin-bottom: 16px; color: #7B2D8B; }
+
+        .ai-box textarea {
+            width: 100%; padding: 12px; border: 2px solid #e2d5f0;
+            border-radius: 10px; font-size: 14px; resize: vertical;
+            min-height: 80px; font-family: inherit;
+        }
+        .ai-box textarea:focus { outline: none; border-color: #7B2D8B; }
+
+        .btn {
+            padding: 12px 24px; border: none; border-radius: 10px;
+            font-size: 14px; font-weight: 600; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-purple { background: #7B2D8B; color: white; }
+        .btn-purple:hover { background: #6a2578; transform: translateY(-1px); }
+        .btn-outline { background: transparent; border: 2px solid #7B2D8B; color: #7B2D8B; }
+        .btn-outline:hover { background: #f5eefa; }
+        .btn-red { background: #fee2e2; color: #dc2626; }
+        .btn-red:hover { background: #fecaca; }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 13px; font-weight: 600; color: #555; }
+        .form-group input, .form-group select {
+            padding: 10px 12px; border: 2px solid #e5e7eb;
+            border-radius: 8px; font-size: 14px; font-family: inherit;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none; border-color: #7B2D8B;
+        }
+        .form-full { grid-column: span 2; }
+
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+        .summary-item {
+            background: linear-gradient(135deg, #f5eefa, #ede9fe);
+            border-radius: 12px; padding: 16px; text-align: center;
+        }
+        .summary-item .amount { font-size: 22px; font-weight: 700; color: #7B2D8B; }
+        .summary-item .category { font-size: 12px; color: #777; margin-top: 4px; }
+        .summary-item .count { font-size: 11px; color: #aaa; }
+
+        .expense-list { display: flex; flex-direction: column; gap: 10px; }
+        .expense-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 14px 16px; border: 1.5px solid #f0e6f8;
+            border-radius: 12px; transition: border-color 0.2s;
+        }
+        .expense-item:hover { border-color: #c084f5; }
+        .expense-left { display: flex; flex-direction: column; gap: 3px; }
+        .expense-desc { font-size: 14px; font-weight: 600; }
+        .expense-meta { font-size: 12px; color: #888; }
+        .expense-right { display: flex; align-items: center; gap: 12px; }
+        .expense-amount { font-size: 18px; font-weight: 700; color: #7B2D8B; }
+        .badge {
+            padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+            background: #f0e6f8; color: #7B2D8B;
+        }
+        .badge.ai { background: #d1fae5; color: #065f46; }
+
+        .status { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-top: 12px; }
+        .status.success { background: #d1fae5; color: #065f46; }
+        .status.error { background: #fee2e2; color: #dc2626; }
+        .status.loading { background: #e0e7ff; color: #3730a3; }
+
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+        .tab-btn {
+            padding: 10px 20px; border: none; border-radius: 20px;
+            font-size: 14px; cursor: pointer; font-weight: 500;
+            background: white; color: #555; transition: all 0.2s;
+        }
+        .tab-btn.active { background: #7B2D8B; color: white; }
+
+        .empty { text-align: center; padding: 40px; color: #aaa; font-size: 14px; }
+        @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } .form-full { grid-column: span 1; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <div>
+        <h1>💸 Expenses Tracker</h1>
+        <p>AI-powered expense tracking by Mary Kay Calasin</p>
+    </div>
+</header>
+
+<div class="container">
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('add')">➕ Add Expense</button>
+        <button class="tab-btn" onclick="showTab('list')">📋 All Expenses</button>
+        <button class="tab-btn" onclick="showTab('summary')">📊 Summary</button>
+    </div>
+
+    <!-- ADD EXPENSE TAB -->
+    <div id="tab-add">
+
+        <div class="card ai-box">
+            <h2>🤖 AI Receipt Parser</h2>
+            <p style="font-size:13px;color:#777;margin-bottom:12px">
+                Paste any receipt text and AI will automatically fill in the details!
+            </p>
+            <textarea id="receipt-text" placeholder="e.g. Apotek 1 - Sykepleier sko 149kr"></textarea>
+            <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
+                <button class="btn btn-purple" onclick="parseReceipt()">✨ Parse with AI</button>
+                <span style="font-size:12px;color:#aaa">or fill in manually below</span>
+            </div>
+            <div id="ai-status"></div>
+        </div>
+
+        <div class="card">
+            <h2>✍️ Manual Entry</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Amount (kr)</label>
+                    <input type="number" id="amount" placeholder="149.90" step="0.01" />
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="category">
+                        <option>Uniform</option>
+                        <option>Food</option>
+                        <option>Transport</option>
+                        <option>Medical</option>
+                        <option>Education</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+                <div class="form-group form-full">
+                    <label>Description</label>
+                    <input type="text" id="description" placeholder="e.g. Nursing shoes from Apotek 1" />
+                </div>
+            </div>
+            <div style="margin-top:16px">
+                <button class="btn btn-purple" onclick="addExpense()">💾 Save Expense</button>
+            </div>
+            <div id="save-status"></div>
+        </div>
+    </div>
+
+    <!-- LIST TAB -->
+    <div id="tab-list" style="display:none">
+        <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+                <h2>📋 All Expenses</h2>
+                <button class="btn btn-outline" onclick="loadExpenses()">🔄 Refresh</button>
+            </div>
+            <div id="expense-list" class="expense-list">
+                <div class="empty">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUMMARY TAB -->
+    <div id="tab-summary" style="display:none">
+        <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+                <h2>📊 Spending Summary</h2>
+                <button class="btn btn-outline" onclick="loadSummary()">🔄 Refresh</button>
+            </div>
+            <div id="summary-grid" class="summary-grid">
+                <div class="empty">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const API = 'https://expenses-tracker-production-75bf.up.railway.app/api';
+
+    function showTab(name) {
+        ['add','list','summary'].forEach(t => {
+            document.getElementById('tab-' + t).style.display = t === name ? 'block' : 'none';
+            document.querySelectorAll('.tab-btn')[['add','list','summary'].indexOf(t)].classList.toggle('active', t === name);
+        });
+        if (name === 'list') loadExpenses();
+        if (name === 'summary') loadSummary();
+    }
+
+    function setStatus(id, msg, type) {
+        const el = document.getElementById(id);
+        el.className = 'status ' + type;
+        el.textContent = msg;
+    }
+
+    async function parseReceipt() {
+        const text = document.getElementById('receipt-text').value.trim();
+        if (!text) return alert('Please paste some receipt text first!');
+        setStatus('ai-status', '🤖 AI is reading your receipt...', 'loading');
+        try {
+            const res = await fetch(API + '/Ai/parse-receipt', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ receiptText: text })
+            });
+            const data = await res.json();
+            document.getElementById('amount').value = data.amount;
+            document.getElementById('description').value = data.description;
+            document.getElementById('category').value = data.category;
+            setStatus('ai-status', '✅ AI filled in the details! Review and save.', 'success');
+        } catch (e) {
+            setStatus('ai-status', '❌ Could not parse receipt. Try filling in manually.', 'error');
+        }
+    }
+
+    async function addExpense() {
+        const amount = parseFloat(document.getElementById('amount').value);
+        const category = document.getElementById('category').value;
+        const description = document.getElementById('description').value.trim();
+        if (!amount || !description) return alert('Please fill in amount and description!');
+        setStatus('save-status', '💾 Saving...', 'loading');
+        try {
+            await fetch(API + '/Expenses', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount, category, description, receiptText: '', aiParsed: false })
+            });
+            setStatus('save-status', '✅ Expense saved!', 'success');
+            document.getElementById('amount').value = '';
+            document.getElementById('description').value = '';
+            document.getElementById('receipt-text').value = '';
+        } catch (e) {
+            setStatus('save-status', '❌ Could not save. Try again.', 'error');
+        }
+    }
+
+    async function loadExpenses() {
+        const list = document.getElementById('expense-list');
+        list.innerHTML = '<div class="empty">Loading...</div>';
+        try {
+            const res = await fetch(API + '/Expenses');
+            const data = await res.json();
+            if (!data.length) { list.innerHTML = '<div class="empty">No expenses yet. Add your first one!</div>'; return; }
+            list.innerHTML = data.map(e => `
+      <div class="expense-item">
+        <div class="expense-left">
+          <div class="expense-desc">${e.description}</div>
+          <div class="expense-meta">${new Date(e.date).toLocaleDateString('nb-NO')} · <span class="badge ${e.aiParsed ? 'ai' : ''}">${e.category}</span> ${e.aiParsed ? '<span class="badge ai">🤖 AI</span>' : ''}</div>
+        </div>
+        <div class="expense-right">
+          <div class="expense-amount">${e.amount} kr</div>
+          <button class="btn btn-red" onclick="deleteExpense(${e.id})">🗑</button>
+        </div>
+      </div>
+    `).join('');
+        } catch (e) {
+            list.innerHTML = '<div class="empty">Could not load expenses.</div>';
+        }
+    }
+
+    async function deleteExpense(id) {
+        if (!confirm('Delete this expense?')) return;
+        await fetch(API + '/Expenses/' + id, { method: 'DELETE' });
+        loadExpenses();
+    }
+
+    async function loadSummary() {
+        const grid = document.getElementById('summary-grid');
+        grid.innerHTML = '<div class="empty">Loading...</div>';
+        try {
+            const res = await fetch(API + '/Expenses/summary');
+            const data = await res.json();
+            if (!data.length) { grid.innerHTML = '<div class="empty">No data yet!</div>'; return; }
+            grid.innerHTML = data.map(s => `
+      <div class="summary-item">
+        <div class="amount">${s.total.toFixed(2)} kr</div>
+        <div class="category">${s.category}</div>
+        <div class="count">${s.count} expense${s.count > 1 ? 's' : ''}</div>
+      </div>
+    `).join('');
+        } catch (e) {
+            grid.innerHTML = '<div class="empty">Could not load summary.</div>';
+        }
+    }
+</script>
+</body>
+</html>
