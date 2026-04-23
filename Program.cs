@@ -7,8 +7,18 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite("Data Source=expenses.db"));
+var dbUrl = Environment.GetEnvironmentVariable("DATABASE_URL") ?? "Data Source=expenses.db";
+
+if (dbUrl.StartsWith("postgres"))
+{
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseNpgsql(dbUrl));
+}
+else
+{
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseSqlite(dbUrl));
+}
 
 builder.Services.AddCors(options =>
 {
