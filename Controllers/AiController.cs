@@ -44,7 +44,7 @@ public class AiController : ControllerBase
 
         var body = new
         {
-            model = "nvidia/nemotron-3-super-120b-a12b:free",
+            model = "google/gemma-3-4b-it:free",
             max_tokens = 200,
             messages = new[]
             {
