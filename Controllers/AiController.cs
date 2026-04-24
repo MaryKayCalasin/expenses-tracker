@@ -1,4 +1,7 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using ExpensesTracker.Data;
 using ExpensesTracker.Models;
 using System.Text;
@@ -8,7 +11,8 @@ namespace ExpensesTracker.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AiController: ControllerBase
+[Authorize]
+public class AiController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly IConfiguration _config;
@@ -17,6 +21,12 @@ public class AiController: ControllerBase
     {
         _db = db;
         _config = config;
+    }
+
+    private int GetUserId()
+    {
+        var claim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        return int.Parse(claim!);
     }
 
     [HttpPost("parse-receipt")]
@@ -64,7 +74,6 @@ public class AiController: ControllerBase
             .GetProperty("content")
             .GetString();
 
-        // Extract just the JSON part from the AI response
         var startIndex = aiReply!.IndexOf('{');
         var endIndex = aiReply.LastIndexOf('}');
         var jsonOnly = aiReply.Substring(startIndex, endIndex - startIndex + 1);
@@ -79,7 +88,8 @@ public class AiController: ControllerBase
             Description = parsed.Description,
             Date = DateTime.Now,
             ReceiptText = request.ReceiptText,
-            AiParsed = true
+            AiParsed = true,
+            UserId = GetUserId()
         };
 
         _db.Expenses.Add(expense);
